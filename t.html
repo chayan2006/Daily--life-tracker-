@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter Hub</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts for better typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* This is our embedded CSS section */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 from Tailwind */
+        }
+
+        /* Page simulation using a helper class */
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Modal transitions */
+        .modal.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .modal {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        /* Chatbot message styling */
+        .chat-message {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            max-width: 85%;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        .bot-message {
+            background-color: #e2e8f0; /* slate-200 */
+            color: #1e293b; /* slate-800 */
+            align-self: flex-start;
+        }
+        .user-message {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            align-self: flex-end;
+        }
+        
+        /* Added for AI Coach Button pulse effect */
+        @keyframes pulse {
+          50% {
+            box-shadow: 0 0 0 1rem rgba(99, 102, 241, 0);
+          }
+        }
+        .animate-pulse-slow {
+          box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+          animation: pulse 2s infinite;
+        }
+        
+        /* Style for the tooltip popup */
+        #ai-tooltip.show {
+            opacity: 1;
+            transform: translateX(-0.5rem);
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+<div class="app-wrapper">
+
+    <!-- ======== Login Section ======== -->
+    <section id="login" class="page-section active">
+        <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style="background-image: url('https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+            <div class="absolute inset-0 bg-black/50"></div> <!-- Overlay for readability -->
+            
+            <!-- Background Shapes -->
+            <div class="absolute -top-48 -left-48 w-96 h-96 bg-indigo-500/20 rounded-full mix-blend-lighten animate-pulse"></div>
+            <div class="absolute -bottom-32 -right-16 w-80 h-80 bg-purple-500/20 rounded-full mix-blend-lighten animate-pulse" style="animation-delay: 1s;"></div>
+
+            <div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-gray-900">Counter Hub</h1>
+                    <p class="text-gray-500 mt-2">Welcome! Please sign in.</p>
+                </div>
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label for="username" class="text-sm font-medium text-gray-700">Username</label>
+                        <input id="username" name="username" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="user">
+                    </div>
+                    <div>
+                        <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+                        <input id="password" name="password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="•••••">
+                    </div>
+                    <p id="login-error" class="text-red-500 text-sm text-center hidden">Invalid credentials. Hint: user / 12345</p>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== Domain Selection Section ======== -->
+    <section id="domain-selection" class="page-section">
+        <div class="p-4 sm:p-6 md:p-8 min-h-screen bg-gradient-to-b from-slate-50 to-indigo-100 relative overflow-hidden">
+            <!-- Background Shapes -->
+            <div class="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 z-0">
+                <div class="w-96 h-96 bg-indigo-200/50 rounded-full blur-3xl"></div>
+            </div>
+            <div class="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 z-0">
+                <div class="w-96 h-96 bg-purple-200/50 rounded-full blur-3xl"></div>
+            </div>
+
+            <div class="max-w-4xl mx-auto relative z-10">
+                 <button id="about-btn" class="absolute top-0 left-0 text-sm font-medium text-gray-700 bg-white shadow-md rounded-lg px-4 py-2 hover:bg-slate-100 transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>About This App</span>
+                </button>
+                <div class="relative rounded-2xl shadow-xl overflow-hidden text-center mb-12 mt-16 sm:mt-0">
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                         alt="Team working together on laptops" 
+                         class="w-full h-48 sm:h-64 object-cover"
+                         onerror="this.onerror=null;this.src='https://placehold.co/1200x256/8b5cf6/FFFFFF?text=Counter+Hub';">
+                    <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-8">
+                        <h1 class="text-3xl sm:text-4xl font-bold text-white">Welcome to Counter Hub</h1>
+                        <p class="text-indigo-200 mt-2">What would you like to focus on today?</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <a href="#finance" class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center border-2 border-green-200">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center bg-green-100 mb-4 text-green-600">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-lg">Finance Management</h3>
+                    </a>
+                    <a href="#productivity" class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center border-2 border-blue-200">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center bg-blue-100 mb-4 text-blue-600">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-lg">Personal Productivity</h3>
+                    </a>
+                    <a href="#habits" class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center border-2 border-red-200">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center bg-red-100 mb-4 text-red-600">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-lg">Healthy Habits</h3>
+                    </a>
+                    <a href="#goals" class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center text-center border-2 border-yellow-200">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center bg-yellow-100 mb-4 text-yellow-600">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-lg">Set & Achieve Goals</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== Finance Section ======== -->
+    <section id="finance" class="page-section">
+         <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+            <div class="max-w-5xl mx-auto">
+                <a href="#domain-selection" class="mb-8 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-800">&larr; Back to Hub</a>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-8">Finance Management 💰</h1>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
+                    <div class="bg-white p-4 rounded-2xl shadow-lg">
+                        <div class="text-sm text-gray-500">Total Budget</div>
+                        <div id="summary-budget" class="text-2xl font-bold text-gray-800">₹0</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-lg">
+                        <div class="text-sm text-gray-500">Total Spent</div>
+                        <div id="summary-spent" class="text-2xl font-bold text-red-600">₹0</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-lg">
+                        <div class="text-sm text-gray-500">Remaining</div>
+                        <div id="summary-remaining" class="text-2xl font-bold text-green-600">₹0</div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="user-type" class="block text-sm font-medium text-gray-700">I am a...</label>
+                            <select id="user-type" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option>College Student</option>
+                                <option>Job Person</option>
+                                <option>General Daily Life Person</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="monthly-budget" class="block text-sm font-medium text-gray-700">My Monthly Budget (₹)</label>
+                            <input type="number" id="monthly-budget" placeholder="e.g., 50000" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="finance-suggestions" class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-r-lg mb-6 hidden">
+                    <h3 class="font-bold mb-2">Tailored Suggestions For You!</h3>
+                    <ul id="suggestion-list" class="list-disc list-inside text-sm space-y-1"></ul>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Spending Breakdown</h2>
+                        <div class="flex justify-center items-center">
+                            <div id="pie-chart" class="w-40 h-40 rounded-full" style="background: conic-gradient(#e5e7eb 0deg 360deg);"></div>
+                        </div>
+                        <div id="pie-legend" class="mt-4 space-y-2 text-sm">
+                            <p class="text-center text-gray-500">Add an expense to see the chart.</p>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Add New Expense</h2>
+                        <form id="add-expense-form" class="space-y-4">
+                            <div>
+                                <label for="expense-desc" class="block text-sm font-medium text-gray-700">Description</label>
+                                <input type="text" id="expense-desc" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., Coffee">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="expense-amount" class="block text-sm font-medium text-gray-700">Amount (₹)</label>
+                                    <input type="number" id="expense-amount" required min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., 150">
+                                </div>
+                                <div>
+                                    <label for="expense-category" class="block text-sm font-medium text-gray-700">Category</label>
+                                    <select id="expense-category" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                                        <option>Food</option> <option>Transport</option> <option>Bills</option> <option>Entertainment</option> <option>Shopping</option> <option>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">Add Expense</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Transactions</h2>
+                    <div id="overspend-alert" class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg text-center hidden">
+                         <p><span class="font-bold">Budget Alert!</span> You have exceeded your monthly budget. It's a good time to review your spending.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount (₹)</th>
+                                    <th class="px-1 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="expense-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr id="empty-row"><td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">No expenses added yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== Productivity Section ======== -->
+    <section id="productivity" class="page-section">
+        <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+            <div class="max-w-4xl mx-auto">
+                <a href="#domain-selection" class="mb-8 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-800">&larr; Back to Hub</a>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-8">Personal Productivity 🚀</h1>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><p class="text-sm font-medium text-gray-500">Tasks Complete</p><p class="text-3xl font-bold text-gray-800"><span id="tasks-done">1</span>/<span id="tasks-total">4</span></p></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><p class="text-sm font-medium text-gray-500">Productivity Score</p><p class="text-3xl font-bold text-blue-500"><span id="productivity-score">25</span>%</p></div>
+                     <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><p class="text-sm font-medium text-gray-500">Daily Streak</p><p class="text-3xl font-bold text-orange-500">🔥 5</p></div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">My Daily Routine</h2>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                        <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full progress-bar" style="width: 25%"></div>
+                    </div>
+                    <ul id="task-list" class="space-y-3">
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600" checked><span class="ml-3 text-gray-700 line-through">Morning workout</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600"><span class="ml-3 text-gray-700">Plan the day's tasks</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600"><span class="ml-3 text-gray-700">Read for 30 minutes</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600"><span class="ml-3 text-gray-700">Review daily goals</span></li>
+                    </ul>
+                </div>
+                <div id="motivation-popup" class="mt-6 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg text-center hidden"><p class="font-bold text-lg">Great job! Keep up the fantastic work! ✨</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== Healthy Habits Section ======== -->
+    <section id="habits" class="page-section">
+        <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+            <div class="max-w-4xl mx-auto">
+                <a href="#domain-selection" class="mb-8 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-800">&larr; Back to Hub</a>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-8">Healthy Habits ❤️</h1>
+                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">What's your main health focus?</h2>
+                     <select id="health-focus" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="none" selected disabled>Select a focus area...</option>
+                        <option value="hydration">Improve Hydration</option>
+                        <option value="sleep">Get Better Sleep</option>
+                        <option value="activity">Increase Physical Activity</option>
+                        <option value="walk">Go for a Morning Walk</option>
+                        <option value="running">Start Running</option>
+                        <option value="reading">Read More Books</option>
+                    </select>
+                </div>
+                <div id="habit-tracker-container" class="hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                        <h2 id="habit-title" class="text-xl font-semibold text-gray-700 mb-4"></h2>
+                        <p id="habit-advice" class="text-sm text-gray-600 mb-4"></p>
+                        <ul id="habit-checklist" class="space-y-3"></ul>
+                    </div>
+                    <div id="achievement-container" class="text-center">
+                        <h3 class="font-semibold text-gray-600 mb-2">Your Achievements</h3>
+                        <div id="badge-display" class="flex justify-center gap-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== Goals Section ======== -->
+    <section id="goals" class="page-section">
+        <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+            <div class="max-w-4xl mx-auto">
+                <a href="#domain-selection" class="mb-8 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-800">&larr; Back to Hub</a>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-8">Set & Achieve Goals 🎯</h1>
+                 <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="goal-title" class="block text-sm font-medium text-gray-700">Goal Title</label>
+                            <input type="text" id="goal-title" value="Learn Basic Spanish" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="goal-deadline" class="block text-sm font-medium text-gray-700">Deadline</label>
+                            <input type="date" id="goal-deadline" value="2025-12-31" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-4">Your Timeline & Milestones</h2>
+                    <div>
+                        <div class="timeline-item completed"><div class="timeline-line"></div><div class="timeline-dot"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div><div class="font-medium text-gray-800">Complete Duolingo Section 1</div><p class="text-sm text-gray-500">Learn basic greetings and phrases.</p></div>
+                        <div class="timeline-item completed"><div class="timeline-line"></div><div class="timeline-dot"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div><div class="font-medium text-gray-800">Practice with a language partner</div><p class="text-sm text-gray-500">Have a 15-minute conversation.</p></div>
+                        <div class="timeline-item"><div class="timeline-line"></div><div class="timeline-dot font-bold text-gray-500">3</div><div class="font-medium text-gray-800">Watch a movie in Spanish</div><p class="text-sm text-gray-500">Use English subtitles to start.</p></div>
+                        <div class="timeline-item"><div class="timeline-dot font-bold text-gray-500">4</div><div class="font-medium text-gray-800">Read a children's book</div><p class="text-sm text-gray-500">Translate one new word per page.</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ======== FLOATING BUTTONS AND MODALS ======== -->
+    
+    <div id="floating-buttons-container" class="hidden">
+        <!-- About Modal -->
+        <div id="about-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-8 relative">
+                <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">About Counter Hub</h2>
+                <div class="space-y-4 text-gray-600 max-h-[70vh] overflow-y-auto pr-4">
+                    <div>
+                        <h3 class="font-semibold text-lg text-green-600">💰 Finance Management</h3>
+                        <p>Take control of your finances. Set a monthly budget, track every expense in real-time, and visualize your spending habits with a dynamic pie chart. Get smart, personalized suggestions based on your lifestyle to save more and spend smarter.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-blue-600">🚀 Personal Productivity</h3>
+                        <p>Organize your day and boost your efficiency. Create a simple to-do list, monitor your progress with a visual bar, and build motivational streaks for completing tasks consistently. Stay focused and achieve more every day.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-red-600">❤️ Healthy Habits</h3>
+                        <p>Invest in your well-being. Choose a health focus like hydration, sleep, or activity, and follow a simple checklist to build positive routines. Earn badges and celebrate your achievements as you create a healthier lifestyle.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-yellow-600">🎯 Set & Achieve Goals</h3>
+                        <p>Turn your dreams into reality. Define your long-term goals, set a deadline, and break them down into smaller, manageable milestones on an interactive timeline. Track your journey and stay motivated until you reach your ambitions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Us Button -->
+        <button id="contact-us-btn" class="fixed top-4 right-4 bg-white shadow-lg rounded-full h-12 w-12 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition-all z-40">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </button>
+        
+        <!-- AI Coach Button with Tooltip -->
+        <div class="fixed bottom-4 right-4 z-40 flex items-center">
+            <div id="ai-tooltip" class="absolute right-20 bg-white text-gray-800 text-sm font-semibold px-4 py-2 rounded-full shadow-lg opacity-0 transition-all duration-300 whitespace-nowrap transform">
+                Chat with AI
+            </div>
+            <button id="ai-coach-btn" class="bg-indigo-600 text-white rounded-full h-16 w-16 flex items-center justify-center shadow-xl hover:bg-indigo-700 transition-transform hover:scale-110 z-10 animate-pulse-slow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"></path><rect x="4" y="12" width="16" height="8" rx="2"></rect><path d="M4 12v-2a2 2 0 0 1 2-2h4"></path><path d="M12 12v-2a2 2 0 0 1 2-2h4"></path></svg>
+            </button>
+        </div>
+
+        <!-- AI Chat Modal -->
+        <div id="ai-chat-modal" class="modal fixed bottom-24 right-4 w-full max-w-md mx-auto sm:mx-0 sm:w-96 hidden z-50">
+            <div class="bg-white rounded-2xl shadow-2xl flex flex-col h-[60vh] max-h-[480px]">
+                <div class="flex justify-between items-center p-4 bg-indigo-600 text-white rounded-t-2xl">
+                    <h3 class="font-bold text-lg">AI Life Coach</h3>
+                    <button id="close-chat-btn" class="text-white hover:text-indigo-200 text-2xl leading-none">&times;</button>
+                </div>
+                <div id="life-coach-chat-window" class="flex-1 p-4 flex flex-col gap-2 overflow-y-auto">
+                    <!-- Messages will be injected here -->
+                </div>
+                <div class="p-4 border-t">
+                    <div class="flex gap-2">
+                        <input type="text" id="life-coach-chat-input" class="flex-1 px-3 py-2 border border-gray-300 rounded-md" placeholder="Ask for advice...">
+                        <button id="life-coach-chat-send" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Us Modal -->
+        <div id="contact-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative">
+                 <button id="close-contact-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Contact Support</h2>
+                 <p class="text-gray-600 mb-6">Have a technical issue? Describe it below or chat with our support bot for immediate help.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Technical Support AI Chat -->
+                    <div class="flex flex-col">
+                        <h3 class="font-semibold text-lg text-gray-700 mb-2">AI Support Chat</h3>
+                         <div id="tech-support-chat-window" class="flex-1 border rounded-lg p-3 flex flex-col gap-2 overflow-y-auto h-64 bg-slate-50">
+                            <!-- Tech support messages go here -->
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <input type="text" id="tech-support-input" class="flex-1 px-3 py-2 border border-gray-300 rounded-md" placeholder="Describe your issue...">
+                            <button id="tech-support-send" class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800">Send</button>
+                        </div>
+                    </div>
+                    <!-- Contact Form -->
+                     <div>
+                        <h3 class="font-semibold text-lg text-gray-700 mb-2">Send a Message</h3>
+                        <form id="contact-form" class="space-y-4">
+                            <div>
+                                <label for="contact-email" class="text-sm font-medium text-gray-700">Your Email</label>
+                                <input type="email" id="contact-email" required class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                             <div>
+                                <label for="contact-message" class="text-sm font-medium text-gray-700">Message</label>
+                                <textarea id="contact-message" rows="4" required class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Submit Ticket</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Page Navigation ---
+    const pages = document.querySelectorAll('.page-section');
+    const floatingButtons = document.getElementById('floating-buttons-container');
+
+    function showPage(hash) {
+        const cleanHash = hash.startsWith('#') ? hash : '#' + hash;
+        pages.forEach(page => page.classList.remove('active'));
+        const targetPage = document.querySelector(cleanHash);
+
+        if (cleanHash === '#login' || !targetPage) {
+            document.querySelector('#login').classList.add('active');
+            floatingButtons.classList.add('hidden');
+        } else {
+            targetPage.classList.add('active');
+            floatingButtons.classList.remove('hidden');
+        }
+    }
+    
+    window.addEventListener('hashchange', () => showPage(window.location.hash));
+    // Initial page load handler
+    showPage(window.location.hash || '#login');
+
+
+    // --- Login Logic ---
+    const loginForm = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginError = document.getElementById('login-error');
+    passwordInput.value = '12345'; // Pre-fill for convenience as requested
+    
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (usernameInput.value.toLowerCase() === 'user' && passwordInput.value === '12345') {
+            loginError.classList.add('hidden');
+            window.location.hash = '#domain-selection';
+        } else {
+            loginError.classList.remove('hidden');
+        }
+    });
+
+    // --- About Modal Logic ---
+    const aboutBtn = document.getElementById('about-btn');
+    const aboutModal = document.getElementById('about-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    aboutBtn.addEventListener('click', () => {
+        aboutModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        aboutModal.classList.add('hidden');
+    });
+
+    aboutModal.addEventListener('click', (e) => {
+        if (e.target === aboutModal) {
+            aboutModal.classList.add('hidden');
+        }
+    });
+    
+    // --- Contact Us Modal ---
+    const contactUsBtn = document.getElementById('contact-us-btn');
+    const contactModal = document.getElementById('contact-modal');
+    const closeContactBtn = document.getElementById('close-contact-btn');
+    contactUsBtn.addEventListener('click', () => contactModal.classList.remove('hidden'));
+    closeContactBtn.addEventListener('click', () => contactModal.classList.add('hidden'));
+    contactModal.addEventListener('click', e => { if(e.target === contactModal) contactModal.classList.add('hidden'); });
+
+    // --- Finance Module Logic ---
+    const userTypeSelect = document.getElementById('user-type');
+    const monthlyBudgetInput = document.getElementById('monthly-budget');
+    const suggestionsContainer = document.getElementById('finance-suggestions');
+    const suggestionList = document.getElementById('suggestion-list');
+    const addExpenseForm = document.getElementById('add-expense-form');
+    const expenseTableBody = document.getElementById('expense-table-body');
+    const summaryBudget = document.getElementById('summary-budget');
+    const summarySpent = document.getElementById('summary-spent');
+    const summaryRemaining = document.getElementById('summary-remaining');
+    const overspendAlert = document.getElementById('overspend-alert');
+    const pieChart = document.getElementById('pie-chart');
+    const pieLegend = document.getElementById('pie-legend');
+    
+    const categoryColors = {
+        'Food': '#f59e0b', 'Transport': '#3b82f6', 'Bills': '#ef4444', 
+        'Entertainment': '#8b5cf6', 'Shopping': '#ec4899', 'Other': '#6b7280'
+    };
+
+    let financeState = { budget: 0, expenses: [] };
+    
+    const suggestions = {
+        'College Student': ['Utilize student discounts.', 'Prioritize cooking at home.', 'Look for free campus events.'],
+        'Job Person': ['Automate savings on payday.', 'Review monthly subscriptions.', 'Create an emergency fund.'],
+        'General Daily Life Person': ['Create a weekly meal plan.', 'Compare prices for large purchases.', 'Use public transport or carpool.']
+    };
+
+    function renderFinanceUI() {
+        const { budget, expenses } = financeState;
+        const totalSpent = expenses.reduce((sum, ex) => sum + ex.amount, 0);
+        const remaining = budget - totalSpent;
+
+        summaryBudget.textContent = `₹${budget.toLocaleString('en-IN')}`;
+        summarySpent.textContent = `₹${totalSpent.toLocaleString('en-IN')}`;
+        summaryRemaining.textContent = `₹${remaining.toLocaleString('en-IN')}`;
+        overspendAlert.classList.toggle('hidden', remaining >= 0);
+
+        expenseTableBody.innerHTML = '';
+        if (expenses.length === 0) {
+            expenseTableBody.innerHTML = `<tr id="empty-row"><td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">No expenses added yet.</td></tr>`;
+        } else {
+            expenses.forEach(ex => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${ex.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ex.category}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">₹${ex.amount.toLocaleString('en-IN')}</td>
+                    <td class="px-1 py-4 text-center"><button data-id="${ex.id}" class="delete-expense-btn text-gray-400 hover:text-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                    </button></td>`;
+                expenseTableBody.appendChild(row);
+            });
+        }
+        
+        const spendingByCategory = expenses.reduce((acc, ex) => {
+            acc[ex.category] = (acc[ex.category] || 0) + ex.amount;
+            return acc;
+        }, {});
+        
+        let gradientString = '', legendHTML = '', currentAngle = 0;
+        if (totalSpent > 0) {
+             for (const category in spendingByCategory) {
+                const amount = spendingByCategory[category];
+                const percentage = (amount / totalSpent) * 100;
+                const angle = (percentage / 100) * 360;
+                const color = categoryColors[category];
+                gradientString += `, ${color} ${currentAngle}deg ${currentAngle + angle}deg`;
+                currentAngle += angle;
+                legendHTML += `<div class="flex items-center justify-between"><div class="flex items-center"><span class="w-3 h-3 rounded-full mr-2" style="background-color: ${color};"></span><span>${category}</span></div><span class="font-medium">₹${amount.toLocaleString('en-IN')}</span></div>`;
+            }
+            pieChart.style.background = `conic-gradient(${gradientString.substring(2)})`;
+            pieLegend.innerHTML = legendHTML;
+        } else {
+             pieChart.style.background = '#e5e7eb';
+             pieLegend.innerHTML = '<p class="text-center text-gray-500">Add an expense to see the chart.</p>';
+        }
+    }
+
+    userTypeSelect.addEventListener('change', (e) => {
+        const userType = e.target.value;
+        if (suggestions[userType]) {
+            suggestionList.innerHTML = suggestions[userType].map(tip => `<li>${tip}</li>`).join('');
+            suggestionsContainer.classList.remove('hidden');
+        }
+    });
+
+    monthlyBudgetInput.addEventListener('input', (e) => {
+        financeState.budget = Number(e.target.value) || 0;
+        renderFinanceUI();
+    });
+
+    addExpenseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        financeState.expenses.unshift({
+            id: Date.now(),
+            description: document.getElementById('expense-desc').value,
+            amount: parseFloat(document.getElementById('expense-amount').value),
+            category: document.getElementById('expense-category').value
+        });
+        addExpenseForm.reset();
+        renderFinanceUI();
+    });
+
+    expenseTableBody.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-expense-btn')) {
+            const expenseId = Number(e.target.closest('.delete-expense-btn').dataset.id);
+            financeState.expenses = financeState.expenses.filter(ex => ex.id !== expenseId);
+            renderFinanceUI();
+        }
+    });
+    
+    // --- Productivity Module Logic ---
+    const taskList = document.getElementById('task-list');
+    const progressBar = document.getElementById('progress-bar');
+    const tasksDone = document.getElementById('tasks-done');
+    const tasksTotal = document.getElementById('tasks-total');
+    const productivityScore = document.getElementById('productivity-score');
+    const motivationPopup = document.getElementById('motivation-popup');
+    
+    function updateProgress() {
+        const checkboxes = taskList.querySelectorAll('input[type="checkbox"]');
+        const checkedTasks = taskList.querySelectorAll('input[type="checkbox"]:checked').length;
+        const totalTasks = checkboxes.length;
+        const percentage = totalTasks > 0 ? (checkedTasks / totalTasks) * 100 : 0;
+        
+        progressBar.style.width = percentage + '%';
+        tasksDone.textContent = checkedTasks;
+        tasksTotal.textContent = totalTasks;
+        productivityScore.textContent = Math.round(percentage);
+        
+        motivationPopup.classList.toggle('hidden', checkedTasks === 0 || checkedTasks === totalTasks);
+    }
+    
+    taskList.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox') {
+            e.target.nextElementSibling.classList.toggle('line-through', e.target.checked);
+            updateProgress();
+        }
+    });
+    updateProgress(); // Initial call
+
+    // --- Healthy Habits Module Logic ---
+    const healthFocusSelect = document.getElementById('health-focus');
+    const habitTrackerContainer = document.getElementById('habit-tracker-container');
+    const habitTitle = document.getElementById('habit-title');
+    const habitAdvice = document.getElementById('habit-advice');
+    const habitChecklist = document.getElementById('habit-checklist');
+    const badgeDisplay = document.getElementById('badge-display');
+    
+    const habitData = {
+        hydration: { title: '💧 Daily Hydration Tracker', advice: 'Aim for 8 glasses of water a day. Carry a reusable bottle as a reminder!', tasks: ['Morning glass', 'With lunch', 'Afternoon hydration', 'With dinner'], badges: [{ name: '1-Day Streak', icon: '💧' }, { name: '3-Day Streak', icon: '🌊' }] },
+        sleep: { title: '😴 Sleep Improvement Plan', advice: 'Aim for 7-8 hours per night. A consistent sleep schedule is key.', tasks: ['No caffeine after 2 PM', 'Dim lights before bed', 'Read a book', 'In bed by 11 PM'], badges: [{ name: 'Well Rested', icon: '🌙' }, { name: 'Sleep Champion', icon: '⭐' }] },
+        activity: { title: '💪 Physical Activity Goals', advice: 'Take a 15-minute walk after lunch to boost your energy and digestion.', tasks: ['15-minute morning walk', 'Take the stairs instead of the elevator', 'Evening stretching routine'], badges: [{ name: 'First Step', icon: '🚶' }, { name: 'Moving Up', icon: '🤸' }] },
+        walk: { title: '👟 Morning Walk Routine', advice: 'Starting your day with a walk can improve your mood and energy levels.', tasks: ['Put on walking shoes', 'Walk for 15 minutes', 'Stretch afterwards'], badges: [{ name: 'Early Bird', icon: '☀️' }, { name: 'Consistent Walker', icon: '🏞️' }] },
+        running: { title: '🏃‍♂️ Couch to 5K Plan', advice: 'Start slow and build up your stamina. Consistency is more important than speed.', tasks: ['Warm-up jog', 'Run for 5 minutes, walk for 2', 'Repeat 3 times', 'Cool-down stretch'], badges: [{ name: 'On the Run', icon: '💨' }, { name: 'Marathon Ready', icon: '🏆' }] },
+        reading: { title: '📚 Daily Reading Habit', advice: 'Just 15 minutes of reading a day can expand your knowledge and reduce stress.', tasks: ['Choose a book', 'Read one chapter', 'Read for 15 minutes without distraction'], badges: [{ name: 'Bookworm', icon: '🐛' }, { name: 'Librarian', icon: '📖' }] }
+    };
+
+    healthFocusSelect.addEventListener('change', (e) => {
+        const focus = e.target.value;
+        if (habitData[focus]) {
+            const data = habitData[focus];
+            habitTitle.textContent = data.title;
+            habitAdvice.textContent = data.advice;
+            habitChecklist.innerHTML = data.tasks.map(task => `<li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600"><span class="ml-3 text-gray-700">${task}</span></li>`).join('');
+            badgeDisplay.innerHTML = data.badges.map(badge => `<div class="text-center p-2 bg-slate-100 rounded-lg"><div class="text-3xl">${badge.icon}</div><div class="text-xs font-medium text-gray-600">${badge.name}</div></div>`).join('');
+            habitTrackerContainer.classList.remove('hidden');
+        }
+    });
+
+    // --- AI Life Coach Chat Logic ---
+    const aiCoachBtn = document.getElementById('ai-coach-btn');
+    const aiChatModal = document.getElementById('ai-chat-modal');
+    const closeChatBtn = document.getElementById('close-chat-btn');
+    const lifeCoachChatWindow = document.getElementById('life-coach-chat-window');
+    const lifeCoachInput = document.getElementById('life-coach-chat-input');
+    const lifeCoachSendBtn = document.getElementById('life-coach-chat-send');
+    let isCoachFirstMessage = true;
+
+    aiCoachBtn.addEventListener('click', () => {
+        aiChatModal.classList.remove('hidden');
+        if (isCoachFirstMessage) {
+            addChatMessage(lifeCoachChatWindow, "Hello! I'm your AI Life Coach. Ask me for personalized financial advice based on your data!", 'bot');
+            isCoachFirstMessage = false;
+        }
+    });
+    closeChatBtn.addEventListener('click', () => aiChatModal.classList.add('hidden'));
+
+    async function handleLifeCoachSubmit() {
+        const userInput = lifeCoachInput.value.trim();
+        if (userInput) {
+            addChatMessage(lifeCoachChatWindow, userInput, 'user');
+            lifeCoachInput.value = '';
+            addChatMessage(lifeCoachChatWindow, "Thinking...", 'bot', true);
+
+            const botResponse = await getGeminiResponse(userInput, financeState, 'lifeCoach');
+            
+            const thinkingMessage = lifeCoachChatWindow.querySelector('.thinking');
+            if(thinkingMessage) thinkingMessage.parentElement.remove();
+            
+            addChatMessage(lifeCoachChatWindow, botResponse, 'bot');
+        }
+    }
+
+    lifeCoachSendBtn.addEventListener('click', handleLifeCoachSubmit);
+    lifeCoachInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLifeCoachSubmit(); });
+
+
+    // --- AI Tech Support Logic ---
+    const techSupportChatWindow = document.getElementById('tech-support-chat-window');
+    const techSupportInput = document.getElementById('tech-support-input');
+    const techSupportSendBtn = document.getElementById('tech-support-send');
+    let isTechSupportFirstMessage = true;
+    
+    contactUsBtn.addEventListener('click', () => {
+        if(isTechSupportFirstMessage) {
+            addChatMessage(techSupportChatWindow, "Hello! How can I help with any technical issues you're facing?", 'bot');
+            isTechSupportFirstMessage = false;
+        }
+    });
+
+    async function handleTechSupportSubmit() {
+        const userInput = techSupportInput.value.trim();
+        if (userInput) {
+            addChatMessage(techSupportChatWindow, userInput, 'user');
+            techSupportInput.value = '';
+            addChatMessage(techSupportChatWindow, "Analyzing...", 'bot', true);
+
+            const botResponse = await getGeminiResponse(userInput, null, 'techSupport');
+
+            const thinkingMessage = techSupportChatWindow.querySelector('.thinking');
+            if(thinkingMessage) thinkingMessage.parentElement.remove();
+
+            addChatMessage(techSupportChatWindow, botResponse, 'bot');
+        }
+    }
+
+    techSupportSendBtn.addEventListener('click', handleTechSupportSubmit);
+    techSupportInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleTechSupportSubmit(); });
+
+
+    // --- Universal Chat & Gemini API Logic ---
+    function addChatMessage(chatWindow, message, sender, isTyping = false) {
+        const messageEl = document.createElement('div');
+        messageEl.className = `chat-message ${sender}-message`;
+
+        if (isTyping) {
+            messageEl.innerHTML = '<span class="animate-pulse thinking">Thinking...</span>';
+        } else {
+            messageEl.textContent = message;
+        }
+        chatWindow.appendChild(messageEl);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    async function getGeminiResponse(userInput, currentFinanceState, mode) {
+        const apiKey = ""; // This will be handled by the environment
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        let systemPrompt = '';
+        let fullPrompt = userInput;
+
+        if (mode === 'lifeCoach') {
+            systemPrompt = `You are an AI financial coach within the "Counter Hub" app. Your persona is encouraging and practical. Your goal is to provide actionable, personalized financial advice based on the user's spending data. Analyze the provided data, identify 1-2 key areas for saving, and provide specific, actionable tips in 2-4 sentences. If the user asks for the current date or time, respond with "I can help with your life goals, but I don't have a watch. You can check your device's clock for the time!". If the user does not ask a finance-related question, gently guide them to one of the app's modules ('Finance', 'Productivity', 'Habits', 'Goals').`;
+            
+            const financeKeywords = ['financ', 'money', 'budget', 'saving', 'expense', 'spending', 'save'];
+            const isFinanceQuery = financeKeywords.some(keyword => userInput.toLowerCase().includes(keyword));
+
+            if (isFinanceQuery && currentFinanceState && currentFinanceState.expenses.length > 0) {
+                const { budget, expenses } = currentFinanceState;
+                const totalSpent = expenses.reduce((sum, ex) => sum + ex.amount, 0);
+                const spendingByCategory = expenses.reduce((acc, ex) => { acc[ex.category] = (acc[ex.category] || 0) + ex.amount; return acc; }, {});
+
+                fullPrompt = `My financial data: Budget ₹${budget}, Total Spent ₹${totalSpent}, Spending Breakdown: ${JSON.stringify(spendingByCategory)}. My question is: "${userInput}"`;
+            }
+        } else if (mode === 'techSupport') {
+            systemPrompt = `You are a friendly Technical Support AI for the "Counter Hub" app. Your goal is to help users solve common technical problems. First, offer simple troubleshooting steps like refreshing the page or checking their internet. If that doesn't work, acknowledge the problem might be on our end and that you've logged the issue. Never ask for personal information. Keep your tone calm and reassuring.`;
+        }
+        
+        const payload = {
+            contents: [{ parts: [{ text: fullPrompt }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            const result = await response.json();
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "I'm not sure how to respond to that.";
+        } catch (error) {
+            console.error("Error calling Gemini API:", error);
+            return "Sorry, I'm having trouble connecting. Please try again in a moment.";
+        }
+    }
+    
+    // --- AI Coach Tooltip Animation ---
+    const aiTooltip = document.getElementById('ai-tooltip');
+    setInterval(() => {
+        // Only show tooltip if the chat modal is not already open
+        if(aiChatModal.classList.contains('hidden')) {
+            aiTooltip.classList.add('show');
+            setTimeout(() => {
+                aiTooltip.classList.remove('show');
+            }, 1500); // Tooltip stays visible for 1.5 seconds
+        }
+    }, 4000); // Pop up every 4 seconds
+});
+</script>
+
+</body>
+</html>
