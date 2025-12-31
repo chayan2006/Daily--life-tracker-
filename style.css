@@ -1,0 +1,369 @@
+/* This is our embedded CSS section */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0f172a;
+    /* slate-900 */
+    transition: background-color 0.3s ease;
+}
+
+/* Page simulation using a helper class */
+.page-section {
+    display: none;
+}
+
+.page-section.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal transitions */
+.modal {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.modal-closed {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+/* Chatbot message styling */
+.chat-message {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    max-width: 85%;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.bot-message {
+    background-color: #334155;
+    /* slate-700 */
+    color: #f1f5f9;
+    /* slate-100 */
+    align-self: flex-start;
+}
+
+.user-message {
+    background-color: #4f46e5;
+    /* indigo-600 */
+    color: white;
+    align-self: flex-end;
+}
+
+/* Added for AI Coach Button pulse effect */
+@keyframes pulse {
+    50% {
+        box-shadow: 0 0 0 1rem rgba(99, 102, 241, 0);
+    }
+}
+
+.animate-pulse-slow {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    animation: pulse 2s infinite;
+}
+
+/* Style for the tooltip popup */
+#ai-tooltip.show {
+    opacity: 1;
+    transform: translateX(-0.5rem);
+}
+
+/* --- Goals Timeline CSS --- */
+.timeline-item {
+    position: relative;
+    padding-left: 2rem;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 0.45rem;
+    top: 0.5rem;
+    bottom: -0.5rem;
+    width: 2px;
+    background-color: #334155;
+    /* slate-700 */
+    transition: background-color 0.3s ease;
+}
+
+.timeline-item:last-child .timeline-line {
+    display: none;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background-color: #334155;
+    /* slate-700 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.timeline-item.completed .timeline-dot {
+    background-color: #16a34a;
+    /* green-600 */
+    color: white;
+}
+
+.timeline-item.completed .timeline-line {
+    background-color: #16a34a;
+    /* green-600 */
+}
+
+.timeline-item.completed .font-medium {
+    text-decoration: line-through;
+    color: #64748b;
+    /* slate-500 */
+}
+
+/* 3D Background Animation Canvas */
+#bg-animation {
+    position: fixed;
+    /* Use fixed to keep it in view */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -10;
+    /* Put it behind everything */
+    opacity: 0.6;
+    /* Adjusted opacity for dark mode */
+}
+
+/* Gradient header text */
+.gradient-text {
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(to right, #818cf8, #c084fc);
+}
+
+/* Dark mode background pattern */
+.content-bg {
+    background-color: #0f172a;
+    /* slate-900 */
+    background-image: radial-gradient(#334155 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* Custom dark mode styles for form inputs */
+.dark-input {
+    background-color: #334155;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+}
+
+.dark-input::placeholder {
+    color: #9ca3af;
+}
+
+.dark-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+}
+
+/* Pre-loader styles */
+#preloader {
+    transition: opacity 0.5s ease-out;
+}
+
+.preloader-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transform: scale(0.8);
+    animation: cycleIcons 4s linear infinite;
+}
+
+/* Stagger the animations for each icon */
+.preloader-icon:nth-child(2) {
+    animation-delay: 1s;
+}
+
+.preloader-icon:nth-child(3) {
+    animation-delay: 2s;
+}
+
+.preloader-icon:nth-child(4) {
+    animation-delay: 3s;
+}
+
+@keyframes cycleIcons {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0.8) rotate(-15deg);
+    }
+
+    6.25% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+
+    25% {
+        opacity: 0;
+        transform: scale(0.8) rotate(15deg);
+    }
+}
+
+/* Spinner for loading buttons */
+.spinner {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- Settings Toggle Switch --- */
+.toggle-bg:after {
+    content: '';
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 9999px;
+    height: 1.25rem;
+    width: 1.25rem;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+input:checked+.toggle-bg:after {
+    transform: translateX(100%);
+    border-color: white;
+}
+
+input:checked+.toggle-bg {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+/* ########## LIGHT THEME ########## */
+body.light-theme {
+    background-color: #f1f5f9;
+    /* slate-100 */
+}
+
+body.light-theme .text-gray-300 {
+    color: #1e293b;
+}
+
+/* slate-800 */
+body.light-theme .text-gray-200 {
+    color: #0f172a;
+}
+
+/* slate-900 */
+body.light-theme .text-gray-400 {
+    color: #64748b;
+}
+
+/* slate-500 */
+body.light-theme .bg-slate-900 {
+    background-color: #f8fafc;
+}
+
+/* slate-50 */
+body.light-theme .content-bg {
+    background-color: #f1f5f9;
+    /* slate-100 */
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+}
+
+body.light-theme .bg-slate-800,
+body.light-theme .bg-slate-800\/70,
+body.light-theme .bg-slate-800\/80 {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+body.light-theme .bg-slate-700\/50 {
+    background-color: #f1f5f9;
+}
+
+body.light-theme .border-slate-700 {
+    border-color: #e2e8f0;
+}
+
+/* slate-200 */
+
+body.light-theme .dark-input {
+    background-color: #f8fafc;
+    /* slate-50 */
+    border-color: #cbd5e1;
+    /* slate-300 */
+    color: #1e293b;
+    /* slate-800 */
+}
+
+body.light-theme .gradient-text {
+    background-image: linear-gradient(to right, #4f46e5, #9333ea);
+}
+
+body.light-theme .timeline-line,
+body.light-theme .timeline-dot {
+    background-color: #e2e8f0;
+    /* slate-200 */
+}
+
+body.light-theme .timeline-item.completed .timeline-dot {
+    background-color: #16a34a;
+}
+
+body.light-theme .timeline-item.completed .timeline-line {
+    background-color: #16a34a;
+}
+
+body.light-theme .text-gray-500 {
+    color: #64748b;
+}
+
+/* Light theme modals & chat */
+body.light-theme .bg-slate-800 {
+    background-color: #fff;
+}
+
+body.light-theme .bot-message {
+    background-color: #e2e8f0;
+    color: #1e293b;
+}
+
+body.light-theme #tech-support-chat-window,
+body.light-theme #life-coach-chat-window {
+    background-color: #f1f5f9;
+}
