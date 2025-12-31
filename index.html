@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Tracker</title>
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts for better typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Three.js for 3D Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-slate-900 text-gray-300 relative">
+
+    <!-- Login/Register Section (Covers Dashboard until logged in) -->
+    <section id="auth-section"
+        class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-sm">
+        <div
+            class="bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-md w-full border border-slate-700 relative overflow-hidden">
+            <!-- Decorative Light -->
+            <div
+                class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+            </div>
+
+            <h2 class="text-3xl font-bold text-center mb-6 gradient-text">Welcome Back</h2>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400">Username</label>
+                    <input type="text" id="login-username"
+                        class="w-full mt-1 p-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400">Password</label>
+                    <input type="password" id="login-password"
+                        class="w-full mt-1 p-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white"
+                        required>
+                </div>
+                <button type="submit" id="login-btn"
+                    class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-bold text-white transition-all shadow-lg shadow-indigo-500/30">
+                    Log In
+                </button>
+                <p class="text-center text-sm text-gray-400 mt-4">
+                    Don't have an account? <a href="#" id="show-register" class="text-indigo-400 hover:underline">Sign
+                        up</a>
+                </p>
+            </form>
+
+            <!-- Register Form (Hidden) -->
+            <form id="register-form" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400">Choose Username</label>
+                    <input type="text" id="reg-username"
+                        class="w-full mt-1 p-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400">Choose Password</label>
+                    <input type="password" id="reg-password"
+                        class="w-full mt-1 p-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white"
+                        required>
+                </div>
+                <button type="submit" id="register-btn"
+                    class="w-full py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-white transition-all shadow-lg shadow-green-500/30">
+                    Create Account
+                </button>
+                <p class="text-center text-sm text-gray-400 mt-4">
+                    Already have an account? <a href="#" id="show-login" class="text-indigo-400 hover:underline">Log
+                        in</a>
+                </p>
+            </form>
+            <p id="auth-error" class="text-red-500 text-sm text-center mt-3 hidden"></p>
+        </div>
+    </section>
+
+    <!-- Pre-loader Section -->
+    <div id="preloader" class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center z-[100]">
+        <div class="relative w-24 h-24 text-gray-300">
+            <!-- Finance Icon -->
+            <svg class="preloader-icon" xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <!-- Productivity Icon -->
+            <svg class="preloader-icon" xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <!-- Habits Icon -->
+            <svg class="preloader-icon" xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                </path>
+            </svg>
+            <!-- Goals Icon -->
+            <svg class="preloader-icon" xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+        </div>
+        <p class="text-indigo-400 mt-4 text-lg font-medium tracking-wider animate-pulse">Building your hub...</p>
+    </div>
+
+    <!-- Left Sidebar -->
+    <aside id="left-sidebar"
+        class="hidden lg:flex flex-col w-64 h-screen fixed top-0 left-0 bg-slate-900 border-r border-slate-700 p-4 z-40">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold gradient-text">Life Tracker</h2>
+        </div>
+        <div id="user-profile" class="text-center p-4 rounded-lg bg-slate-800 mb-8">
+            <img id="user-avatar" src="https://placehold.co/80x80/1e293b/a78bfa?text=User"
+                class="w-20 h-20 rounded-full mx-auto mb-3">
+            <h3 id="user-name" class="font-semibold text-gray-200">Guest User</h3>
+            <p id="user-email" class="text-xs text-gray-400">Please log in</p>
+        </div>
+        <nav class="flex flex-col space-y-2 flex-grow">
+            <a href="#domain-selection" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-slate-800">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                Dashboard
+            </a>
+            <a href="#finance" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-slate-800">
+                <svg class="w-6 h-6 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2.01V8m0 0h.01M12 14h.01m-6.938-2h13.856c1.54 0 2.502-1.667 1.732-3L16.732 4c-.77-1.333-2.694-1.333-3.464 0L9.268 9H3.062c-1.54 0-2.502 1.667-1.732 3l3.968 7c.77 1.333 2.694 1.333 3.464 0l3.968-7z">
+                    </path>
+                </svg>
+                Finance
+            </a>
+            <a href="#productivity" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-slate-800">
+                <svg class="w-6 h-6 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Productivity
+            </a>
+            <a href="#habits" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-slate-800">
+                <svg class="w-6 h-6 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
+                </svg>
+                Habits
+            </a>
+            <a href="#goals" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-slate-800">
+                <svg class="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path>
+                </svg>
+                Goals
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Right Sidebar -->
+    <aside id="right-sidebar"
+        class="hidden lg:flex flex-col w-72 h-screen fixed top-0 right-0 bg-slate-900 border-l border-slate-700 p-4 z-40">
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-bold text-gray-300">Quick Actions</h2>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-lg mb-6">
+            <h3 class="font-semibold text-gray-300 mb-3">Add Expense</h3>
+            <form id="quick-add-expense-form" class="space-y-3">
+                <input type="text" id="quick-expense-desc" required
+                    class="w-full px-3 py-2 border rounded-md shadow-sm dark-input text-sm" placeholder="Description">
+                <div class="flex gap-2">
+                    <input type="number" id="quick-expense-amount" required min="0"
+                        class="w-1/2 px-3 py-2 border rounded-md shadow-sm dark-input text-sm" placeholder="Amount">
+                    <select id="quick-expense-category"
+                        class="w-1/2 px-3 py-2 border rounded-md shadow-sm dark-input text-sm">
+                        <option>Food</option>
+                        <option>Transport</option>
+                        <option>Bills</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Add</button>
+            </form>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-lg">
+            <h3 class="font-semibold text-gray-300 mb-3">Today's Summary</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Tasks Done:</span>
+                    <span id="summary-tasks" class="font-semibold text-gray-200">1 / 4</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Budget Left:</span>
+                    <span id="summary-budget-remaining" class="font-semibold text-green-400">₹0</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main id="main-content" class="lg:ml-64 lg:mr-72">
+        <div class="app-wrapper">
+            <!-- ALL PAGE SECTIONS GO HERE -->
+            <section id="domain-selection" class="page-section">
+                <canvas id="bg-animation"></canvas>
+                <div class="p-4 sm:p-6 md:p-8 min-h-screen relative overflow-hidden">
+                    <div class="max-w-4xl mx-auto relative z-10">
+                        <div class="relative rounded-2xl shadow-xl overflow-hidden text-center mb-12 mt-16 sm:mt-0">
+                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                alt="Team working together on laptops" class="w-full h-48 sm:h-64 object-cover"
+                                onerror="this.onerror=null;this.src='https://placehold.co/1200x256/8b5cf6/FFFFFF?text=Counter+Hub';">
+                            <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-8">
+                                <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Welcome to Counter
+                                    Hub</h1>
+                                <p class="text-indigo-200 mt-2 max-w-lg">Your all-in-one dashboard to manage finances,
+                                    boost productivity, build habits, and achieve goals.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <a href="#finance"
+                                class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-slate-700/80 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+                                <div
+                                    class="w-16 h-16 rounded-full flex items-center justify-center bg-green-900/50 mb-4 text-green-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="font-semibold text-gray-200 text-lg">Finance Management</h3>
+                            </a>
+                            <a href="#productivity"
+                                class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-slate-700/80 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+                                <div
+                                    class="w-16 h-16 rounded-full flex items-center justify-center bg-blue-900/50 mb-4 text-blue-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                    </svg>
+                                </div>
+                                <h3 class="font-semibold text-gray-200 text-lg">Personal Productivity</h3>
+                            </a>
+                            <a href="#habits"
+                                class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-slate-700/80 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+                                <div
+                                    class="w-16 h-16 rounded-full flex items-center justify-center bg-red-900/50 mb-4 text-red-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path
+                                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="font-semibold text-gray-200 text-lg">Healthy Habits</h3>
+                            </a>
+                            <a href="#goals"
+                                class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-slate-700/80 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col items-center text-center">
+                                <div
+                                    class="w-16 h-16 rounded-full flex items-center justify-center bg-yellow-900/50 mb-4 text-yellow-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <circle cx="12" cy="12" r="6"></circle>
+                                        <circle cx="12" cy="12" r="2"></circle>
+                                    </svg>
+                                </div>
+                                <h3 class="font-semibold text-gray-200 text-lg">Set & Achieve Goals</h3>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="finance" class="page-section content-bg">
+                <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+                    <div class="max-w-5xl mx-auto">
+                        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4 gradient-text">Finance Management 💰
+                        </h1>
+
+                        <div class="text-center mb-8">
+                            <button id="get-finance-analysis-btn"
+                                class="py-2 px-5 bg-indigo-600 text-white font-semibold rounded-full shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75 flex items-center gap-2 mx-auto disabled:bg-indigo-400 disabled:cursor-not-allowed">
+                                <span id="finance-analysis-btn-text">✨ Get AI Financial Analysis</span>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
+                            <div class="bg-slate-800 p-4 rounded-2xl shadow-lg border border-slate-700">
+                                <div class="text-sm text-gray-400">Total Budget</div>
+                                <div id="summary-budget" class="text-2xl font-bold text-gray-200">₹0</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-2xl shadow-lg border border-slate-700">
+                                <div class="text-sm text-gray-400">Total Spent</div>
+                                <div id="summary-spent" class="text-2xl font-bold text-red-400">₹0</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-2xl shadow-lg border border-slate-700">
+                                <div class="text-sm text-gray-400">Remaining</div>
+                                <div id="summary-remaining" class="text-2xl font-bold text-green-400">₹0</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 mb-6">
+                            <h2 class="text-xl font-semibold text-gray-300 mb-4">Your Details</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="user-type" class="block text-sm font-medium text-gray-400">I am
+                                        a...</label>
+                                    <select id="user-type"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                        <option>College Student</option>
+                                        <option>Job Person</option>
+                                        <option>General Daily Life Person</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="monthly-budget" class="block text-sm font-medium text-gray-400">My
+                                        Monthly Budget (₹)</label>
+                                    <input type="number" id="monthly-budget" placeholder="e.g., 50000"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="finance-suggestions"
+                            class="bg-green-900/50 border-l-4 border-green-500 text-green-300 p-4 rounded-r-lg mb-6 hidden">
+                            <h3 class="font-bold mb-2">Tailored Suggestions For You!</h3>
+                            <ul id="suggestion-list" class="list-disc list-inside text-sm space-y-1"></ul>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+                            <div class="lg:col-span-2 bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+                                <h2 class="text-xl font-semibold text-gray-300 mb-4">Spending Breakdown</h2>
+                                <div class="flex justify-center items-center">
+                                    <div id="pie-chart" class="w-40 h-40 rounded-full"
+                                        style="background: conic-gradient(#334155 0deg 360deg);"></div>
+                                </div>
+                                <div id="pie-legend" class="mt-4 space-y-2 text-sm">
+                                    <p class="text-center text-gray-500">Add an expense to see the chart.</p>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-3 bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+                                <h2 class="text-xl font-semibold text-gray-300 mb-4">Add New Expense</h2>
+                                <form id="add-expense-form" class="space-y-4">
+                                    <div>
+                                        <label for="expense-desc"
+                                            class="block text-sm font-medium text-gray-400">Description</label>
+                                        <input type="text" id="expense-desc" required
+                                            class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input"
+                                            placeholder="e.g., Coffee">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="expense-amount"
+                                                class="block text-sm font-medium text-gray-400">Amount (₹)</label>
+                                            <input type="number" id="expense-amount" required min="0"
+                                                class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input"
+                                                placeholder="e.g., 150">
+                                        </div>
+                                        <div>
+                                            <label for="expense-category"
+                                                class="block text-sm font-medium text-gray-400">Category</label>
+                                            <select id="expense-category"
+                                                class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                                <option>Food</option>
+                                                <option>Transport</option>
+                                                <option>Bills</option>
+                                                <option>Entertainment</option>
+                                                <option>Shopping</option>
+                                                <option>Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button type="submit"
+                                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-transform hover:scale-105">Add
+                                        Expense</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- AI Savings Goal Planner -->
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 mb-6">
+                            <h2 class="text-xl font-semibold text-gray-300 mb-4">✨ AI Savings Goal Planner</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label for="savings-goal-name" class="block text-sm font-medium text-gray-400">What
+                                        are you saving for?</label>
+                                    <input type="text" id="savings-goal-name" placeholder="e.g., New Laptop"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                </div>
+                                <div>
+                                    <label for="savings-goal-amount" class="block text-sm font-medium text-gray-400">How
+                                        much do you need? (₹)</label>
+                                    <input type="number" id="savings-goal-amount" placeholder="e.g., 80000"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                </div>
+                                <div>
+                                    <label for="savings-goal-date"
+                                        class="block text-sm font-medium text-gray-400">Target Date</label>
+                                    <input type="date" id="savings-goal-date"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                </div>
+                            </div>
+                            <button id="generate-savings-plan-btn"
+                                class="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">
+                                <span id="generate-savings-plan-btn-text">Generate Savings Plan</span>
+                            </button>
+                            <div id="savings-plan-output" class="mt-4 p-4 bg-slate-900/50 rounded-lg hidden"></div>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+                            <h2 class="text-xl font-semibold text-gray-300 mb-4">Recent Transactions</h2>
+                            <div id="overspend-alert"
+                                class="mb-4 p-4 bg-red-900/50 text-red-300 rounded-lg text-center hidden">
+                                <p><span class="font-bold">Budget Alert!</span> You have exceeded your monthly budget.
+                                    It's a good time to review your spending.</p>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-700">
+                                    <thead class="bg-slate-700/50">
+                                        <tr>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                                Description</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                                Category</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                                Amount (₹)</th>
+                                            <th
+                                                class="px-1 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expense-table-body" class="divide-y divide-slate-700">
+                                        <tr id="empty-row">
+                                            <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">No
+                                                expenses added yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="productivity" class="page-section content-bg">
+                <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+                    <div class="max-w-4xl mx-auto">
+                        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-8 gradient-text">Personal Productivity
+                            🚀</h1>
+
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 mb-6">
+                            <h2 class="text-xl font-semibold text-gray-300 mb-4">Plan Your Day</h2>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="productivity-goal-input"
+                                    class="flex-1 px-3 py-2 border rounded-md dark-input"
+                                    placeholder="e.g., Organize my home office">
+                                <button id="generate-tasks-btn"
+                                    class="flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">
+                                    <span id="generate-tasks-btn-text">✨ Generate Routine</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 text-center">
+                                <p class="text-sm font-medium text-gray-400">Tasks Complete</p>
+                                <p class="text-3xl font-bold text-gray-200"><span id="tasks-done">1</span>/<span
+                                        id="tasks-total">4</span></p>
+                            </div>
+                            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 text-center">
+                                <p class="text-sm font-medium text-gray-400">Productivity Score</p>
+                                <p class="text-3xl font-bold text-blue-400"><span id="productivity-score">25</span>%</p>
+                            </div>
+                            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 text-center">
+                                <p class="text-sm font-medium text-gray-400">Daily Streak</p>
+                                <p class="text-3xl font-bold text-orange-400">🔥 5</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+                            <h2 class="text-xl font-semibold text-gray-300 mb-4">My Daily Routine</h2>
+                            <div class="flex gap-2 mb-4">
+                                <input type="text" id="new-task-input" class="dark-input flex-1 p-2 rounded-lg"
+                                    placeholder="Add a new task...">
+                                <button id="add-task-btn"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">+</button>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2.5 mb-4">
+                                <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full progress-bar"
+                                    style="width: 25%"></div>
+                            </div>
+                            <ul id="task-list" class="space-y-3">
+                                <li class="flex items-center"><input type="checkbox"
+                                        class="h-5 w-5 rounded border-gray-500 bg-slate-700 text-indigo-500 focus:ring-indigo-500"
+                                        checked><span class="ml-3 text-gray-400 line-through">Morning workout</span>
+                                </li>
+                                <li class="flex items-center"><input type="checkbox"
+                                        class="h-5 w-5 rounded border-gray-500 bg-slate-700 text-indigo-500 focus:ring-indigo-500"><span
+                                        class="ml-3 text-gray-300">Plan the day's tasks</span></li>
+                                <li class="flex items-center"><input type="checkbox"
+                                        class="h-5 w-5 rounded border-gray-500 bg-slate-700 text-indigo-500 focus:ring-indigo-500"><span
+                                        class="ml-3 text-gray-300">Read for 30 minutes</span></li>
+                                <li class="flex items-center"><input type="checkbox"
+                                        class="h-5 w-5 rounded border-gray-500 bg-slate-700 text-indigo-500 focus:ring-indigo-500"><span
+                                        class="ml-3 text-gray-300">Review daily goals</span></li>
+                            </ul>
+                        </div>
+                        <div id="motivation-popup"
+                            class="mt-6 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg text-center hidden">
+                            <p class="font-bold text-lg">Great job! Keep up the fantastic work! ✨</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="habits" class="page-section content-bg">
+                <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+                    <div class="max-w-4xl mx-auto">
+                        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-8 gradient-text">Healthy Habits ❤️</h1>
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 mb-6">
+                            <h2 class="text-xl font-semibold text-gray-300 mb-4">Create a New Habit Plan</h2>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="habit-goal-input"
+                                    class="flex-1 px-3 py-2 border rounded-md dark-input"
+                                    placeholder="e.g., Be more mindful during the day">
+                                <button id="generate-habit-plan-btn"
+                                    class="flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">
+                                    <span id="generate-habit-plan-btn-text">✨ Generate Plan</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="habit-tracker-container" class="hidden">
+                            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 mb-6">
+                                <h2 id="habit-title" class="text-xl font-semibold text-gray-300 mb-4"></h2>
+                                <p id="habit-advice" class="text-sm text-gray-400 mb-4"></p>
+                                <ul id="habit-checklist" class="space-y-3"></ul>
+                            </div>
+                            <div id="achievement-container" class="text-center">
+                                <h3 class="font-semibold text-gray-400 mb-2">Your Achievements</h3>
+                                <div id="badge-display" class="flex justify-center gap-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="goals" class="page-section content-bg">
+                <div class="p-4 sm:p-6 md:p-8 min-h-screen">
+                    <div class="max-w-4xl mx-auto">
+                        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-8 gradient-text">Set & Achieve Goals 🎯
+                        </h1>
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label for="goal-title" class="block text-sm font-medium text-gray-400">Goal
+                                        Title</label>
+                                    <input type="text" id="goal-title" value="Learn Basic Spanish"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                </div>
+                                <div>
+                                    <label for="goal-deadline"
+                                        class="block text-sm font-medium text-gray-400">Deadline</label>
+                                    <input type="date" id="goal-deadline" value="2025-12-31"
+                                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <button id="plan-milestones-btn"
+                                    class="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">
+                                    <span id="plan-milestones-btn-text">✨ Plan Milestones</span>
+                                </button>
+                                <button id="find-resources-btn"
+                                    class="w-full flex justify-center items-center gap-2 py-2 px-4 border border-indigo-500 rounded-md shadow-sm text-sm font-medium text-indigo-300 hover:bg-indigo-900/50 disabled:text-indigo-400/50 disabled:cursor-not-allowed">
+                                    <span id="find-resources-btn-text">✨ Find Resources</span>
+                                </button>
+                            </div>
+                            <h2 class="text-xl font-semibold text-gray-300 mt-6 mb-4">Your Timeline & Milestones</h2>
+                            <div id="timeline-container">
+                                <div class="timeline-item completed">
+                                    <div class="timeline-line"></div>
+                                    <div class="timeline-dot"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                                            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg></div>
+                                    <div class="font-medium text-gray-300">Complete Duolingo Section 1</div>
+                                    <p class="text-sm text-gray-500">Learn basic greetings and phrases.</p>
+                                </div>
+                                <div class="timeline-item completed">
+                                    <div class="timeline-line"></div>
+                                    <div class="timeline-dot"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                                            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg></div>
+                                    <div class="font-medium text-gray-300">Practice with a language partner</div>
+                                    <p class="text-sm text-gray-500">Have a 15-minute conversation.</p>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-line"></div>
+                                    <div class="timeline-dot font-bold text-gray-400">3</div>
+                                    <div class="font-medium text-gray-300">Watch a movie in Spanish</div>
+                                    <p class="text-sm text-gray-500">Use English subtitles to start.</p>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot font-bold text-gray-400">4</div>
+                                    <div class="font-medium text-gray-300">Read a children's book</div>
+                                    <p class="text-sm text-gray-500">Translate one new word per page.</p>
+                                </div>
+                            </div>
+                            <div id="resources-container" class="mt-6 hidden">
+                                <h2 class="text-xl font-semibold text-gray-300 mb-4">Helpful Resources</h2>
+                                <div id="resources-output" class="p-4 bg-slate-900/50 rounded-lg">
+                                    <!-- AI generated resources will go here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ======== FLOATING BUTTONS AND MODALS ======== -->
+
+    <div id="global-ui-container">
+        <div class="fixed top-4 right-4 z-40 flex items-center gap-2">
+            <button id="about-btn"
+                class="text-sm font-medium text-gray-200 bg-slate-800/70 backdrop-blur-sm shadow-md rounded-lg px-4 py-2 hover:bg-slate-700 transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-indigo-400">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>About</span>
+            </button>
+            <button id="settings-btn"
+                class="text-sm font-medium text-gray-200 bg-slate-800/70 backdrop-blur-sm shadow-md rounded-lg p-2 hover:bg-slate-700 transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-indigo-400">
+                    <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2.73l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2.73l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                    </path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Settings</span>
+            </button>
+            <button id="logout-btn"
+                class="text-sm font-medium text-gray-200 bg-slate-800/70 backdrop-blur-sm shadow-md rounded-lg px-4 py-2 hover:bg-slate-700 transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-indigo-400">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Logout</span>
+            </button>
+        </div>
+
+        <!-- About Modal -->
+        <div id="about-modal"
+            class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-closed z-50">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl max-w-2xl w-full p-8 relative">
+                <button id="close-modal-btn"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-300 text-2xl leading-none">&times;</button>
+                <h2 class="text-2xl font-bold text-gray-200 mb-6">About Counter Hub</h2>
+                <div class="space-y-4 text-gray-400 max-h-[70vh] overflow-y-auto pr-4">
+                    <div>
+                        <h3 class="font-semibold text-lg text-green-400">💰 Finance Management</h3>
+                        <p>Take control of your finances. Set a budget, track expenses, and use the ✨ AI Financial
+                            Analysis to get a detailed report on spending. With the new ✨ AI Savings Planner, you can
+                            set a goal and get a personalized plan to reach it.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-blue-400">🚀 Personal Productivity</h3>
+                        <p>Organize your day and boost your efficiency. Describe a goal and let our ✨ AI Routine
+                            Generator create a custom to-do list for you. Monitor your progress with a visual bar and
+                            build motivational streaks for completing tasks consistently.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-red-400">❤️ Healthy Habits</h3>
+                        <p>Invest in your well-being. Describe any health goal and let our ✨ AI Habit Planner generate a
+                            personalized checklist, advice, and achievements to help you build positive routines and
+                            create a healthier lifestyle.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-yellow-400">🎯 Set & Achieve Goals</h3>
+                        <p>Turn your dreams into reality. Define your long-term goals and let our ✨ AI Milestone Planner
+                            break them down into smaller, manageable steps. Use the ✨ AI Resource Finder to discover
+                            helpful books, websites, and apps for your goal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal"
+            class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-closed z-50">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl max-w-md w-full p-8 relative">
+                <button id="close-settings-modal-btn"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-300 text-2xl leading-none">&times;</button>
+                <h2 class="text-2xl font-bold text-gray-200 mb-6">Settings</h2>
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium text-gray-300">Light Mode</span>
+                        <label for="theme-toggle" class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="theme-toggle" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-slate-600 rounded-full peer-focus:ring-4 peer-focus:ring-indigo-500/50 toggle-bg">
+                            </div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium text-gray-300">Enable Notifications</span>
+                        <label for="notif-toggle" class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notif-toggle" class="sr-only peer" checked>
+                            <div
+                                class="w-11 h-6 bg-slate-600 rounded-full peer-focus:ring-4 peer-focus:ring-indigo-500/50 toggle-bg">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Finance Analysis Modal -->
+        <div id="finance-analysis-modal"
+            class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-closed z-50">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl max-w-2xl w-full p-8 relative">
+                <button id="close-analysis-modal-btn"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-300 text-2xl leading-none">&times;</button>
+                <h2 class="text-2xl font-bold text-gray-200 mb-4 gradient-text">Your Financial Analysis</h2>
+                <div id="analysis-content" class="space-y-4 text-gray-400 max-h-[70vh] overflow-y-auto pr-4">
+                    <!-- AI content will go here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Us Button -->
+        <button id="contact-us-btn"
+            class="fixed bottom-24 right-4 bg-slate-800 shadow-lg rounded-full h-12 w-12 flex items-center justify-center text-gray-400 hover:bg-slate-700 hover:text-indigo-400 transition-all z-40">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                </path>
+            </svg>
+        </button>
+
+        <!-- AI Coach Button with Tooltip -->
+        <div class="fixed bottom-4 right-4 z-40 flex items-center">
+            <div id="ai-tooltip"
+                class="absolute right-20 bg-slate-700 text-gray-200 text-sm font-semibold px-4 py-2 rounded-full shadow-lg opacity-0 transition-all duration-300 whitespace-nowrap transform">
+                Chat with AI
+            </div>
+            <button id="ai-coach-btn"
+                class="bg-indigo-600 text-white rounded-full h-16 w-16 flex items-center justify-center shadow-xl hover:bg-indigo-700 transition-transform hover:scale-110 z-10 animate-pulse-slow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 8V4H8"></path>
+                    <rect x="4" y="12" width="16" height="8" rx="2"></rect>
+                    <path d="M4 12v-2a2 2 0 0 1 2-2h4"></path>
+                    <path d="M12 12v-2a2 2 0 0 1 2-2h4"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- AI Chat Modal -->
+        <div id="ai-chat-modal"
+            class="modal fixed bottom-24 right-4 w-full max-w-md mx-auto sm:mx-0 sm:w-96 modal-closed z-50">
+            <div
+                class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl flex flex-col h-[60vh] max-h-[480px]">
+                <div class="flex justify-between items-center p-4 bg-indigo-600 text-white rounded-t-2xl">
+                    <h3 class="font-bold text-lg">AI Life Coach</h3>
+                    <button id="close-chat-btn"
+                        class="text-white hover:text-indigo-200 text-2xl leading-none">&times;</button>
+                </div>
+                <div id="life-coach-chat-window" class="flex-1 p-4 flex flex-col gap-2 overflow-y-auto bg-slate-800/50">
+                    <!-- Messages will be injected here -->
+                </div>
+                <div class="p-4 border-t border-slate-700">
+                    <div class="flex gap-2">
+                        <input type="text" id="life-coach-chat-input"
+                            class="flex-1 px-3 py-2 border rounded-md dark-input" placeholder="Ask for advice...">
+                        <button id="life-coach-chat-send"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Us Modal -->
+        <div id="contact-modal"
+            class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-closed z-50">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl max-w-lg w-full p-6 relative">
+                <button id="close-contact-btn"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-300 text-2xl leading-none">&times;</button>
+                <h2 class="text-2xl font-bold text-gray-200 mb-4">Contact Support</h2>
+                <p class="text-gray-400 mb-6">Have a technical issue? Describe it below or chat with our support bot for
+                    immediate help.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Technical Support AI Chat -->
+                    <div class="flex flex-col">
+                        <h3 class="font-semibold text-lg text-gray-300 mb-2">AI Support Chat</h3>
+                        <div id="tech-support-chat-window"
+                            class="flex-1 border border-slate-700 rounded-lg p-3 flex flex-col gap-2 overflow-y-auto h-64 bg-slate-900">
+                            <!-- Tech support messages go here -->
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <input type="text" id="tech-support-input"
+                                class="flex-1 px-3 py-2 border rounded-md dark-input"
+                                placeholder="Describe your issue...">
+                            <button id="tech-support-send"
+                                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500">Send</button>
+                        </div>
+                    </div>
+                    <!-- Contact Form -->
+                    <div>
+                        <h3 class="font-semibold text-lg text-gray-300 mb-2">Send a Message</h3>
+                        <form id="contact-form" class="space-y-4">
+                            <div>
+                                <label for="contact-email" class="text-sm font-medium text-gray-400">Your Email</label>
+                                <input type="email" id="contact-email" required
+                                    class="mt-1 w-full px-3 py-2 border rounded-md shadow-sm dark-input">
+                            </div>
+                            <div>
+                                <label for="contact-message" class="text-sm font-medium text-gray-400">Message</label>
+                                <textarea id="contact-message" rows="4" required
+                                    class="mt-1 w-full px-3 py-2 border rounded-md shadow-sm dark-input"></textarea>
+                            </div>
+                            <button type="submit"
+                                class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Submit
+                                Ticket</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
